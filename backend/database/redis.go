@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -13,11 +14,27 @@ import (
 var RedisClient *redis.Client
 
 func ConnectRedis() {
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-	})
+	redisURL := os.Getenv("REDIS_URL")
 
-	_, err := RedisClient.Ping(context.Background()).Result()
+	var err error
+
+	if redisURL != "" {
+		var opts *redis.Options
+
+		opts, err = redis.ParseURL(redisURL)
+
+		if err != nil {
+			panic("Failed to parse Redis URL: " + err.Error())
+		}
+
+		RedisClient = redis.NewClient(opts)
+	} else {
+		RedisClient = redis.NewClient(&redis.Options{
+			Addr: "localhost:6379",
+		})
+	}
+
+	_, err = RedisClient.Ping(context.Background()).Result()
 
 	if err != nil {
 		panic("Failed to connect to Redis: " + err.Error())
