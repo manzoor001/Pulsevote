@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -16,7 +17,10 @@ var UserCollection *mongo.Collection
 var VoteCollection *mongo.Collection
 
 func ConnectDatabase() {
-	uri := "mongodb://localhost:27017"
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		uri = "mongodb://localhost:27017"
+	}
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
